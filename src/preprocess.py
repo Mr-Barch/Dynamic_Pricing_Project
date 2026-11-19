@@ -24,16 +24,22 @@ def remove_outliers(df, k=3.0):
     mask = (df["base_price"] >= q1 - k * iqr) & (df["base_price"] <= q3 + k * iqr)
     return df[mask].reset_index(drop=True)
 
-
+FEATURE_COLS = ["name", "source", "destination", "distance"]
+KEEP_COLS = FEATURE_COLS + ["base_price", "price", "surge_multiplier", "timestamp"]
+PROCESSED_PATH = "data/processed_data.csv"
+def build_dataset(df):
+    df = df[KEEP_COLS].sort_values(by=["timestamp"])
+    return df.reset_index(drop=True)
 
 
 if __name__ == "__main__":
     df = load_raw()
-    print("Raw:", df.shape)
     df = drop_missing_and_duplicates(df)
-    print("After cleaning:", df.shape)
     df = add_base_price(df)
-    print(df["base_price"].describe())
     df = remove_outliers(df)
-    print("After outliers:", df.shape)
+    df = build_dataset(df)
+    df.to_csv(PROCESSED_PATH, index=False)
+    print("Saved:", df.shape)
+    print(df.head())
+
 
