@@ -5,6 +5,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_sco
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from xgboost import XGBRegressor
 
 PROCESSED_PATH = "data/processed_data.csv"
 CATEGORICAL_COLS = ["name", "source", "destination"]
@@ -63,6 +64,9 @@ if __name__ == "__main__":
         "Ridge": Ridge(),
         "RandomForest": RandomForestRegressor(
             n_estimators=100, min_samples_leaf=5, n_jobs=-1, random_state=42
+        ),
+        "XGBoost": XGBRegressor(
+            n_estimators=300, max_depth=6, learning_rate=0.1, n_jobs=-1, random_state=42
         ),
     }
     for name, model in models.items():
