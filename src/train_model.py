@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error, r2_score
 from sklearn.compose import ColumnTransformer
@@ -50,7 +51,7 @@ def fit_and_eval(model, train, val):
     pred = pipe.predict(val[FEATURE_COLS]) # predict base_price
     return pipe, evaluate(val, pred)
 
-
+#RandomForest
 
 if __name__ == "__main__":
     df = load_processed()
@@ -58,6 +59,12 @@ if __name__ == "__main__":
     pred = baseline_predict(train, val)
     mae, rmse, r2 = evaluate(val, pred)
     print("Baseline val:", round(mae, 3), round(rmse, 3), round(r2, 3))
-    pipe, (mae, rmse, r2) = fit_and_eval(Ridge(), train, val)
-    print("Ridge val:", round(mae, 3), round(rmse, 3), round(r2, 3))
-
+    models = {
+        "Ridge": Ridge(),
+        "RandomForest": RandomForestRegressor(
+            n_estimators=100, min_samples_leaf=5, n_jobs=-1, random_state=42
+        ),
+    }
+    for name, model in models.items():
+        pipe, (mae, rmse, r2) = fit_and_eval(model, train, val)
+        print(name, "val:", round(mae, 3), round(rmse, 3), round(r2, 3))
