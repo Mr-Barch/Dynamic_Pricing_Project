@@ -1,3 +1,4 @@
+import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Ridge
@@ -7,10 +8,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from xgboost import XGBRegressor
 
+
 PROCESSED_PATH = "data/processed_data.csv"
 CATEGORICAL_COLS = ["name", "source", "destination"]
 NUMERIC_COLS = ["distance"]
 FEATURE_COLS = CATEGORICAL_COLS + NUMERIC_COLS
+MODEL_PATH = "models/pricing_model.pkl"
+
 
 def load_processed(path=PROCESSED_PATH):
     return pd.read_csv(path)
@@ -69,6 +73,23 @@ if __name__ == "__main__":
             n_estimators=300, max_depth=6, learning_rate=0.1, n_jobs=-1, random_state=42
         ),
     }
+    pipes = {}
+    val_mae = {}
     for name, model in models.items():
         pipe, (mae, rmse, r2) = fit_and_eval(model, train, val)
+        pipes[name] = pipe
+        val_mae[name] = mae
         print(name, "val:", round(mae, 3), round(rmse, 3), round(r2, 3))
+
+    best_name = min(val_mae, key=val_mae.get)
+    best_pipe = pipes[best_name]
+    print("Best model:", best_name)
+
+    base_test = evaluate(test, baseline_predict(train, test))
+    best_test = evaluate(test, best_pipe.predict(test[FEATURE_COLS]))
+    print("Baseline test:", [round(x, 3) for x in base_test])
+    print(best_name, "test:", [round(x, 3) for x in best_test])
+
+    joblib.dump(best_pipe, MODEL_PATH)
+    print("Saved model to", MODEL_PATH)
+
