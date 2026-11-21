@@ -58,3 +58,18 @@ col1.metric("Base price", f"${base_price:.2f}")
 col2.metric("Surge", f"x{surge:.2f}")
 col3.metric("Final price", f"${final_price:.2f}")
 
+# Comparison
+st.subheader("Scenario comparison")
+scenarios = {
+    "Normal day (12:00, clear)": compute_surge(product, 12),
+    "Rush hour + heavy rain (8:00)": compute_surge(product, 8, rain="heavy"),
+}
+rows = [
+    {
+        "Scenario": name,
+        "Surge": f"x{s:.2f}",
+        "Final price": f"${base_price * s:.2f}",
+    }
+    for name, s in scenarios.items()
+]
+st.table(pd.DataFrame(rows))
